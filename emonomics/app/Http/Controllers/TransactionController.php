@@ -24,11 +24,18 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        // Default to first type, or null
+        $types = Type::orderBy('type_name')->get();
+        $selectedTypeId = old('type_id') ?? ($types->first()->type_id ?? null);
+        $categories = $selectedTypeId
+            ? Category::where('type_id', $selectedTypeId)->orderBy('category_name')->get()
+            : collect();
+
         return view('transactions.create', [
-            'types' => Type::orderBy('type_name')->get(),
-            'categories' => Category::orderBy('category_name')->get(), // simple for now
+            'types' => $types,
+            'categories' => $categories,
             'emotionOptions' => Transaction::emotions(),
         ]);
     }
@@ -133,3 +140,4 @@ class TransactionController extends Controller
         }
     }
 }
+

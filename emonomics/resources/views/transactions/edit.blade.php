@@ -67,14 +67,17 @@
             {{-- Emotion --}}
             <div>
                 <x-input-label for="emotion" value="Emotion" />
-                <select id="emotion" name="emotion" class="mt-1 w-full rounded border-gray-300" required>
-                    <option value="">Select emotion</option>
+                <div id="emotion-chips" class="flex flex-wrap gap-2 mt-1">
                     @foreach($emotionOptions as $key => $label)
-                        <option value="{{ $key }}" @selected(old('emotion', $transaction->emotion) == $key)>
+                        <button type="button"
+                            class="chip-emotion px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black @if(old('emotion', $transaction->emotion) == $key) border-black shadow-lg text-black @endif"
+                            data-value="{{ $key }}">
                             {{ $label }}
-                        </option>
+                        </button>
                     @endforeach
-                </select>
+                </div>
+                <input type="hidden" name="emotion" id="emotion" value="{{ old('emotion', $transaction->emotion) }}"
+                    required />
                 <x-input-error :messages="$errors->get('emotion')" class="mt-2" />
             </div>
 
@@ -91,4 +94,35 @@
 
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const typeSelect = document.getElementById('type_id');
+            const categorySelect = document.getElementById('category_id');
+            const emotionChips = document.querySelectorAll('.chip-emotion');
+            const emotionInput = document.getElementById('emotion');
+
+            typeSelect.addEventListener('change', function () {
+                const typeId = this.value;
+                fetch(`/transactions/categories/${typeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        categorySelect.innerHTML = '<option value="">Select category</option>';
+                        data.forEach(cat => {
+                            categorySelect.innerHTML += `<option value="${cat.category_id}">${cat.category_name}</option>`;
+                        });
+                    });
+            });
+
+            emotionChips.forEach(chip => {
+                chip.addEventListener('click', function () {
+                    emotionChips.forEach(c => c.classList.remove('border-black', 'shadow-lg', 'text-black'));
+                    emotionChips.forEach(c => c.classList.add('border-gray-300', 'text-gray-700'));
+                    this.classList.remove('border-gray-300', 'text-gray-700');
+                    this.classList.add('border-black', 'shadow-lg', 'text-black');
+                    emotionInput.value = this.dataset.value;
+                });
+            });
+        });
+    </script>
 </x-app-layout>
