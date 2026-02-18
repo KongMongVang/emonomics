@@ -140,4 +140,3 @@ class TransactionController extends Controller
         }
     }
 }
-
