@@ -7,13 +7,18 @@ use App\Http\Controllers\AdminController;
 use App\Models\Transaction;
 use App\Models\Type;
 use App\Models\Category;
+use App\Models\User;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+// User dashboard route (only for non-admin users)
 Route::get('/dashboard', function () {
     $user = auth()->user();
+    if ($user->is_admin) {
+        return redirect()->route('admin.dashboard');
+    }
     $transactions = Transaction::with(['type', 'category'])
         ->where('user_id', $user->user_id)
         ->orderByDesc('date')
@@ -56,7 +61,8 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+// User-only routes
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -77,9 +83,20 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Admin dashboard route
+// Admin dashboard route (admin only, no user dashboard or transaction routes)
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin', function () {
+        $totalUsers = User::count();
+        $totalTransactions = Transaction::count();
+        $suspendedAccounts = User::where('is_suspended', true)->count();
+        $recentUsers = User::orderByDesc('created_at')->take(5)->get();
+        return view('admin.dashboard', [
+            'totalUsers' => $totalUsers,
+            'totalTransactions' => $totalTransactions,
+            'suspendedAccounts' => $suspendedAccounts,
+            'recentUsers' => $recentUsers,
+        ]);
+    })->name('admin.dashboard');
 });
 
 require __DIR__.'/auth.php';
