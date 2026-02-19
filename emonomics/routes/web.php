@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AdminController;
 use App\Models\Transaction;
 use App\Models\Type;
 use App\Models\Category;
@@ -74,6 +75,11 @@ Route::middleware('auth')->group(function () {
             ->get(['category_id', 'category_name']);
         return response()->json($categories);
     });
+});
+
+// Admin dashboard route
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 });
 
 require __DIR__.'/auth.php';
