@@ -97,6 +97,38 @@ Route::middleware(['auth', 'admin'])->group(function () {
             'recentUsers' => $recentUsers,
         ]);
     })->name('admin.dashboard');
+
+    Route::get('/admin/users', function () {
+        $users = User::withCount('transactions')->orderByDesc('created_at')->get();
+        return view('admin.users', [
+            'users' => $users,
+        ]);
+    })->name('admin.users');
+
+    // Suspend or activate user
+    Route::post('/admin/users/{user}/suspend', function (User $user) {
+        $user->is_suspended = !$user->is_suspended;
+        $user->save();
+        return redirect()->route('admin.users');
+    })->name('admin.users.suspend');
+
+    // Delete user
+    Route::delete('/admin/users/{user}', function (User $user) {
+        $user->delete();
+        return redirect()->route('admin.users');
+    })->name('admin.users.delete');
+
+    Route::get('/admin/users/{user}', function (App\Models\User $user) {
+        if ($user->is_admin) abort(404);
+        $user->loadCount('transactions');
+        $totalSpending = $user->transactions()->whereHas('type', fn($q) => $q->where('type_name', 'expense'))->sum('amount');
+        $recentTransactions = $user->transactions()->orderByDesc('date')->take(10)->get();
+        return view('admin.user-view', [
+            'user' => $user,
+            'totalSpending' => $totalSpending,
+            'recentTransactions' => $recentTransactions,
+        ]);
+    })->name('admin.users.view');
 });
 
 require __DIR__.'/auth.php';

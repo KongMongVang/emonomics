@@ -47,7 +47,7 @@
                                             {{ $user->created_at ? $user->created_at->diffForHumans() : 'N/A' }}
                                         </td>
                                         <td class="py-2 px-4">
-                                            <a href="#" class="text-black underline hover:text-gray-700 text-sm">View</a>
+                                            <a href="{{ route('admin.users.view', ['user' => $user->user_id]) }}" class="text-black underline hover:text-gray-700 text-sm">View</a>
                                         </td>
                                     </tr>
                                 @endif
