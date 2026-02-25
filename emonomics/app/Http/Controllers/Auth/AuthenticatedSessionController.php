@@ -26,6 +26,14 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Check if user is suspended
+        if (Auth::user()->is_suspended ?? false) {
+            Auth::logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account is suspended. Please contact the administrator.'
+            ]);
+        }
+
         $request->session()->regenerate();
 
         // Redirect admin users to admin dashboard

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\Type;
 use App\Models\Category;
+use App\Models\Emotion;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
@@ -32,11 +33,12 @@ class TransactionController extends Controller
         $categories = $selectedTypeId
             ? Category::where('type_id', $selectedTypeId)->orderBy('category_name')->get()
             : collect();
+        $emotions = Emotion::orderBy('name')->get();
 
         return view('transactions.create', [
             'types' => $types,
             'categories' => $categories,
-            'emotionOptions' => Transaction::emotions(),
+            'emotions' => $emotions,
         ]);
     }
 
@@ -82,11 +84,15 @@ class TransactionController extends Controller
     {
         $this->authorizeOwner($request, $transaction);
 
+        $types = Type::orderBy('type_name')->get();
+        $categories = Category::where('type_id', $transaction->type_id)->orderBy('category_name')->get();
+        $emotions = Emotion::orderBy('name')->get();
+
         return view('transactions.edit', [
             'transaction' => $transaction,
-            'types' => Type::orderBy('type_name')->get(),
-            'categories' => Category::orderBy('category_name')->get(),
-            'emotionOptions' => Transaction::emotions(),
+            'types' => $types,
+            'categories' => $categories,
+            'emotions' => $emotions,
         ]);
     }
 

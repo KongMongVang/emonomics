@@ -12,8 +12,7 @@ class AdminUserSeeder extends Seeder
         DB::table('users')->updateOrInsert(
             ['email' => 'admin@example.com'],
             [
-                'first_name' => 'Admin',
-                'last_name' => 'User',
+                'name' => 'Admin User',
                 'password' => Hash::make('admin1234'),
                 'is_admin' => true,
             ]

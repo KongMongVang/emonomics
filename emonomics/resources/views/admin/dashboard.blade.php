@@ -60,9 +60,9 @@
                 <!-- Quick Actions -->
                 <div class="bg-white rounded-lg shadow p-6 w-full md:w-96 flex flex-col gap-4">
                     <div class="text-gray-500 text-sm mb-2 font-semibold">Quick Actions</div>
-                    <a href="#" class="inline-block px-4 py-2 bg-black text-white rounded shadow hover:bg-gray-900">Add Mood Category</a>
-                    <a href="#" class="inline-block px-4 py-2 bg-black text-white rounded shadow hover:bg-gray-900">Add Spending Category</a>
-                    <a href="#" class="inline-block px-4 py-2 bg-gray-700 text-white rounded shadow hover:bg-gray-900">View Suspended Accounts</a>
+                    <!-- Removed Add Mood Category button -->
+                    <a href="{{ route('admin.categories') }}" class="inline-block px-4 py-2 bg-black text-white rounded shadow hover:bg-gray-900">Add Spending Category</a>
+                    <a href="{{ route('admin.users', ['suspended' => 1]) }}" class="inline-block px-4 py-2 bg-gray-700 text-white rounded shadow hover:bg-gray-900">View Suspended Accounts</a>
                 </div>
             </div>
         </div>
