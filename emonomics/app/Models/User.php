@@ -12,18 +12,11 @@ class User extends Authenticatable
     protected $primaryKey = 'user_id';
     public $timestamps = true;
 
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'email',
-        'password',
-    ];
-
+    protected $fillable = ['name', 'email', 'password'];
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
 
     public function admin(): HasOne
     {
@@ -35,4 +28,3 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class, 'user_id', 'user_id');
     }
 }
-

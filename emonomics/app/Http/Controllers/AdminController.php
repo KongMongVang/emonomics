@@ -11,4 +11,12 @@ class AdminController extends Controller
     {
         return view('admin.dashboard');
     }
+
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->is_suspended) {
+            Auth::logout();
+            return redirect()->route('login')->withErrors(['email' => 'Your account is suspended. Please contact support.']);
+        }
+    }
 }

@@ -19,6 +19,12 @@
                         <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
                             {{ __('Users') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.categories')" :active="request()->routeIs('admin.categories')">
+                            {{ __('Manage Categories') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.emotions')" :active="request()->routeIs('admin.emotions')">
+                            {{ __('Manage Emotions') }}
+                        </x-nav-link>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}

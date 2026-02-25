@@ -54,9 +54,9 @@
       <div>
         <x-input-label for="emotion" value="Emotion" />
         <div id="emotion-chips" class="flex flex-wrap gap-2 mt-1">
-          @foreach($emotionOptions as $key => $label)
-            <button type="button" class="chip-emotion px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black @if(old('emotion') == $key) border-black shadow-lg text-black @endif" data-value="{{ $key }}">
-              {{ $label }}
+          @foreach($emotions as $emotion)
+            <button type="button" class="chip-emotion px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black @if(old('emotion') == $emotion->id) border-black shadow-lg text-black @endif" data-value="{{ $emotion->id }}">
+              {{ $emotion->name }}
             </button>
           @endforeach
         </div>

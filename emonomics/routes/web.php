@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Models\Type;
 use App\Models\Category;
 use App\Models\User;
+use App\Models\Emotion;
 
 Route::get('/', function () {
     return view('welcome');
@@ -34,20 +35,24 @@ Route::get('/dashboard', function () {
         ->whereHas('type', fn($q) => $q->where('type_name', 'expense'))
         ->sum('amount');
 
-    // Most common emotion
-    $commonEmotion = Transaction::where('user_id', $user->user_id)
-        ->selectRaw('emotion, COUNT(*) as count')
-        ->groupBy('emotion')
-        ->orderByDesc('count')
-        ->first();
-
     // Total transactions
     $totalTransactions = Transaction::where('user_id', $user->user_id)->count();
 
-    // Spending by mood
-    $spendingByMood = Transaction::where('user_id', $user->user_id)
+    // Most common emotion
+    $commonEmotion = null;
+    if (\Schema::hasColumn('transactions', 'emotion')) {
+        $commonEmotion = Transaction::where('user_id', $user->user_id)
+            ->selectRaw('emotion, COUNT(*) as count')
+            ->groupBy('emotion')
+            ->orderByDesc('count')
+            ->first();
+    }
+
+    // Spending by mood (legacy, keep for dashboard compatibility)
+    $spendingByMood = \App\Models\Transaction::where('user_id', $user->user_id)
         ->whereHas('type', fn($q) => $q->where('type_name', 'expense'))
-        ->selectRaw('emotion, SUM(amount) as total')
+        ->whereNotNull('emotion')
+        ->select('emotion', \DB::raw('SUM(amount) as total'))
         ->groupBy('emotion')
         ->get();
 
@@ -55,8 +60,8 @@ Route::get('/dashboard', function () {
     return view('dashboard', [
         'transactions' => $transactions,
         'totalSpendings' => abs($totalSpendings),
-        'commonEmotion' => $commonEmotion,
         'totalTransactions' => $totalTransactions,
+        'commonEmotion' => $commonEmotion,
         'spendingByMood' => $spendingByMood,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -98,8 +103,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ]);
     })->name('admin.dashboard');
 
-    Route::get('/admin/users', function () {
-        $users = User::withCount('transactions')->orderByDesc('created_at')->get();
+    Route::get('/admin/users', function (\Illuminate\Http\Request $request) {
+        $usersQuery = User::withCount('transactions')->orderByDesc('created_at');
+        if ($request->has('suspended')) {
+            $usersQuery->where('is_suspended', true);
+        }
+        $users = $usersQuery->get();
         return view('admin.users', [
             'users' => $users,
         ]);
@@ -129,6 +138,82 @@ Route::middleware(['auth', 'admin'])->group(function () {
             'recentTransactions' => $recentTransactions,
         ]);
     })->name('admin.users.view');
+
+    // Manage Categories Page
+    Route::get('/admin/categories', function () {
+        $expenseType = Type::where('type_name', 'expense')->first();
+        $spendingCategories = collect();
+        if ($expenseType) {
+            $spendingCategories = Category::where('type_id', $expenseType->type_id)
+                ->withCount(['transactions as users_count' => function ($query) {
+                    $query->select(Transaction::raw('count(distinct user_id)'));
+                }])
+                ->get();
+        }
+        return view('admin.categories', [
+            'spendingCategories' => $spendingCategories,
+        ]);
+    })->name('admin.categories');
+
+    // Store Spending Category (Expense)
+    Route::post('/admin/categories/spending', function (\Illuminate\Http\Request $request) {
+        $request->validate(['category_name' => 'required|string|max:255']);
+        $expenseType = Type::where('type_name', 'expense')->first();
+        if ($expenseType) {
+            Category::create([
+                'category_name' => $request->category_name,
+                'type_id' => $expenseType->type_id,
+            ]);
+        }
+        return redirect()->route('admin.categories')->with('success', 'Spending category added!');
+    })->name('admin.categories.spending.store');
+
+    // Edit Spending Category (Expense)
+    Route::put('/admin/categories/{category}', function (\Illuminate\Http\Request $request, $categoryId) {
+        $request->validate(['category_name' => 'required|string|max:255']);
+        $category = Category::findOrFail($categoryId);
+        $category->category_name = $request->category_name;
+        $category->save();
+        return redirect()->route('admin.categories')->with('success', 'Spending category updated!');
+    })->name('admin.categories.edit');
+
+    // Delete Category
+    Route::delete('/admin/categories/{category}', function ($categoryId) {
+        $category = Category::findOrFail($categoryId);
+        $category->delete();
+        return redirect()->route('admin.categories')->with('success', 'Category deleted!');
+    })->name('admin.categories.delete');
+
+    // Manage Emotions Page
+    Route::get('/admin/emotions', function () {
+        $emotions = Emotion::orderBy('name')->get();
+        return view('admin.emotions', [
+            'emotions' => $emotions,
+        ]);
+    })->name('admin.emotions');
+
+    // Store Emotion
+    Route::post('/admin/emotions', function (\Illuminate\Http\Request $request) {
+        $request->validate(['name' => 'required|string|max:255|unique:emotions,name']);
+        Emotion::create(['name' => $request->name]);
+        return redirect()->route('admin.emotions')->with('success', 'Emotion added!');
+    })->name('admin.emotions.store');
+
+    // Edit Emotion
+    Route::put('/admin/emotions/{emotion}', function ($emotionId, \Illuminate\Http\Request $request) {
+        $request->validate(['name' => 'required|string|max:255|unique:emotions,name,' . $emotionId]);
+        $emotion = \App\Models\Emotion::findOrFail($emotionId);
+        $emotion->name = $request->name;
+        $emotion->save();
+        return redirect()->route('admin.emotions')->with('success', 'Emotion updated!');
+    })->name('admin.emotions.edit');
+
+    // Delete Emotion
+    Route::delete('/admin/emotions/{emotion}', function ($emotionId) {
+        $emotion = Emotion::findOrFail($emotionId);
+        $emotion->delete();
+        return redirect()->route('admin.emotions')->with('success', 'Emotion deleted!');
+    })->name('admin.emotions.delete');
 });
 
 require __DIR__.'/auth.php';

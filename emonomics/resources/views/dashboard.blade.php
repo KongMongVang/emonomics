@@ -61,19 +61,15 @@
                                     <td class="py-2 px-4">{{ \Carbon\Carbon::parse($txn->date)->format('Y-m-d') }}</td>
                                     <td class="py-2 px-4">{{ $txn->description }}</td>
                                     <td class="py-2 px-4">${{ number_format(abs($txn->amount), 2) }}</td>
-                                    <td class="py-2 px-4">
-                                        {{ \App\Models\Transaction::emotions()[$txn->emotion] ?? 'Unknown' }}</td>
+                                    <td class="py-2 px-4">{{ \App\Models\Transaction::emotions()[$txn->emotion] ?? 'Unknown' }}</td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="4" class="py-2 px-4 text-center text-gray-400">No transactions</td>
-                                </tr>
+                                <tr><td colspan="4" class="py-2 px-4 text-center text-gray-400">No transactions</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                     <div class="flex justify-center mt-6">
-                        <a href="{{ route('transactions.index') }}"
-                            class="text-black underline hover:text-gray-700 text-sm">View all</a>
+                        <a href="{{ route('transactions.index') }}" class="text-black underline hover:text-gray-700 text-sm">View all</a>
                     </div>
                 </div>
                 <!-- Spending by Mood (Progress Bar) -->
@@ -92,13 +88,11 @@
                                     <span class="text-gray-700">${{ number_format(abs($mood->total), 2) }}</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-3">
-                                    <div class="bg-green-400 h-3 rounded-full transition-all duration-300"
-                                        style="width: {{ $totalSpendingsForMood > 0 ? round((abs($mood->total) / $totalSpendingsForMood) * 100) : 0 }}%">
-                                    </div>
+                                    <div class="bg-green-400 h-3 rounded-full transition-all duration-300" style="width: {{ $totalSpendingsForMood > 0 ? round((abs($mood->total) / $totalSpendingsForMood) * 100) : 0 }}%"></div>
                                 </div>
                             </div>
                         @endforeach
-                        @if($spendingByMood->isEmpty())
+                        @if(empty($spendingByMood) || (is_object($spendingByMood) && method_exists($spendingByMood, 'isEmpty') && $spendingByMood->isEmpty()))
                             <div class="text-gray-400">No spending data</div>
                         @endif
                     </div>
