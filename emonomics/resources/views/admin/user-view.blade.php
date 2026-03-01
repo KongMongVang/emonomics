@@ -14,7 +14,7 @@
                 <div class="bg-white rounded-lg shadow p-6 flex flex-col gap-2 md:row-span-2 md:h-full"
                     style="min-height:220px;">
                     <div class="text-lg font-bold mb-2">User Info</div>
-                    <div><span class="font-semibold">Name:</span> {{ $user->first_name }} {{ $user->last_name }}</div>
+                    <div><span class="font-semibold">Name:</span> {{ $user->name }} </div>
                     <div><span class="font-semibold">Email:</span> {{ $user->email }}</div>
                     <div><span class="font-semibold">User ID:</span> {{ $user->user_id }}</div>
                     <div><span class="font-semibold">Joined:</span>
