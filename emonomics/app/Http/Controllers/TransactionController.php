@@ -52,7 +52,7 @@ class TransactionController extends Controller
             'amount' => ['required', 'integer', 'min:1'],
             'type_id' => ['required', 'integer', 'exists:types,type_id'],
             'category_id' => ['required', 'integer', 'exists:categories,category_id'],
-            'emotion' => ['required', 'integer', 'between:1,8'],
+            'emotion' => ['required', 'integer', 'exists:emotions,id'],
         ]);
 
         // Enforce: category belongs to selected type

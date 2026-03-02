@@ -25,7 +25,7 @@
                             @if(!$user->is_admin)
                                 <tr>
                                     <td class="py-2 px-4">{{ $user->user_id }}</td>
-                                    <td class="py-2 px-4">{{ $user->first_name }} {{ $user->last_name }}</td>
+                                    <td class="py-2 px-4">{{ $user->name }} </td>
                                     <td class="py-2 px-4">{{ $user->email }}</td>
                                     <td class="py-2 px-4">{{ $user->created_at ? $user->created_at->format('Y-m-d') : 'N/A' }}
                                     </td>

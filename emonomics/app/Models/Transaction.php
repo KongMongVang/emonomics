@@ -18,28 +18,8 @@ class Transaction extends Model
         'date',
         'user_id',
         'type_id',
-        'category_id',
+        'category_id'
     ];
-
-    public static function emotions(): array
-    {
-        return [
-            1 => 'Happy/Content',
-            2 => 'Stressed/Anxious',
-            3 => 'Bored',
-            4 => 'Sad/Down',
-            5 => 'Excited',
-            6 => 'Frustrated/Angry',
-            7 => 'Neutral',
-            8 => 'Overwhelmed',
-        ];
-    }
-
-    public function getEmotionLabelAttribute(): string
-{
-    return self::emotions()[$this->emotion] ?? 'Unknown';
-}
-
 
     public function user(): BelongsTo
     {
@@ -55,5 +35,28 @@ class Transaction extends Model
     {
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
-}
 
+    public function emotion()
+    {
+        return $this->belongsTo(Emotion::class, 'emotion', 'id');
+    }
+
+    public static function emotions(): array
+    {
+        return [
+            1 => 'Happy',
+            2 => 'Stressed',
+            3 => 'Bored',
+            4 => 'Sad/Down',
+            5 => 'Excited',
+            6 => 'Frustrated',
+            7 => 'Neutral',
+            8 => 'Overwhelmed',
+        ];
+    }
+
+    public function getEmotionLabelAttribute(): string
+    {
+        return self::emotions()[$this->emotion] ?? 'Unknown';
+    }
+}
