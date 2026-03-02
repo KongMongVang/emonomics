@@ -30,7 +30,7 @@ EmoNomics is a personal finance dashboard that helps you understand the connecti
 1. **Clone the repository:**
    ```sh
    git clone <your-repo-url>
-   cd capstone-economics/economics
+   cd capstone-emonomics/emonomics
    ```
 2. **Install dependencies:**
    ```sh
