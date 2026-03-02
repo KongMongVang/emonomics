@@ -61,7 +61,15 @@
                                     <td class="py-2 px-4">{{ \Carbon\Carbon::parse($txn->date)->format('Y-m-d') }}</td>
                                     <td class="py-2 px-4">{{ $txn->description }}</td>
                                     <td class="py-2 px-4">${{ number_format(abs($txn->amount), 2) }}</td>
-                                    <td class="py-2 px-4">{{ \App\Models\Transaction::emotions()[$txn->emotion] ?? 'Unknown' }}</td>
+                                    <td class="py-2 px-4">
+                                        @if(is_object($txn->emotion))
+                                            {{ $txn->emotion->name }}
+                                        @elseif(is_numeric($txn->emotion))
+                                            {{ \App\Models\Emotion::find($txn->emotion)?->name ?? 'Unknown' }}
+                                        @else
+                                            Unknown
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr><td colspan="4" class="py-2 px-4 text-center text-gray-400">No transactions</td></tr>
@@ -83,12 +91,22 @@
                             <div>
                                 <div class="flex justify-between mb-1">
                                     <span class="text-gray-700">
-                                        {{ \App\Models\Transaction::emotions()[$mood->emotion] ?? 'Unknown' }}
+                                        @if(is_object($mood->emotion))
+                                            {{ $mood->emotion->name }}
+                                        @elseif(is_numeric($mood->emotion))
+                                            {{ \App\Models\Emotion::find($mood->emotion)?->name ?? 'Unknown' }}
+                                        @else
+                                            Unknown
+                                        @endif
                                     </span>
                                     <span class="text-gray-700">${{ number_format(abs($mood->total), 2) }}</span>
                                 </div>
-                                <div class="w-full bg-gray-200 rounded-full h-3">
-                                    <div class="bg-green-400 h-3 rounded-full transition-all duration-300" style="width: {{ $totalSpendingsForMood > 0 ? round((abs($mood->total) / $totalSpendingsForMood) * 100) : 0 }}%"></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                    @php
+                                        $percent = $totalSpendingsForMood > 0 ? (abs($mood->total) / $totalSpendingsForMood) * 100 : 0;
+                                        $percent = min(max($percent, 0), 100); // Clamp between 0 and 100
+                                    @endphp
+                                    <div class="bg-green-400 h-3 rounded-full transition-all duration-300" style="width: {{ $percent }}%"></div>
                                 </div>
                             </div>
                         @endforeach

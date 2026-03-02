@@ -14,6 +14,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// About page route
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
 // User dashboard route (only for non-admin users)
 Route::get('/dashboard', function () {
     $user = auth()->user();
@@ -48,8 +53,10 @@ Route::get('/dashboard', function () {
             ->first();
     }
 
-    // Spending by mood (legacy, keep for dashboard compatibility)
+    // Spending by mood (filtered for current month)
     $spendingByMood = \App\Models\Transaction::where('user_id', $user->user_id)
+        ->whereMonth('date', $month)
+        ->whereYear('date', $year)
         ->whereHas('type', fn($q) => $q->where('type_name', 'expense'))
         ->whereNotNull('emotion')
         ->select('emotion', \DB::raw('SUM(amount) as total'))
